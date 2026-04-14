@@ -305,6 +305,55 @@ fn apply_style_wasm(
     get_html()
 }
 
+// --- Header/Footer rendering ---
+
+#[wasm_bindgen]
+pub fn get_header_html() -> String {
+    with_doc(|d| {
+        if d.body.headers.is_empty() {
+            return String::new();
+        }
+        let mut html = String::new();
+        for header in &d.body.headers {
+            for para in &header.paragraphs {
+                html.push_str("<p>");
+                for run in &para.runs {
+                    html.push_str(&run.text);
+                }
+                html.push_str("</p>");
+            }
+        }
+        html
+    })
+}
+
+#[wasm_bindgen]
+pub fn get_footer_html() -> String {
+    with_doc(|d| {
+        if d.body.footers.is_empty() {
+            return String::new();
+        }
+        let mut html = String::new();
+        for footer in &d.body.footers {
+            for para in &footer.paragraphs {
+                html.push_str("<p>");
+                for run in &para.runs {
+                    html.push_str(&run.text);
+                }
+                html.push_str("</p>");
+            }
+        }
+        html
+    })
+}
+
+#[wasm_bindgen]
+pub fn get_page_count() -> usize {
+    // Approximate page count based on paragraph count (rough heuristic)
+    let para_count = with_doc(|d| d.paragraph_count());
+    std::cmp::max(1, (para_count + 25) / 26)
+}
+
 // --- Legacy API (keep backward compat for existing callers) ---
 
 #[wasm_bindgen]
