@@ -305,6 +305,105 @@ fn apply_style_wasm(
     get_html()
 }
 
+// --- Extended formatting ---
+
+#[wasm_bindgen]
+pub fn set_highlight(sp: usize, so: usize, ep: usize, eo: usize, color: &str) -> String {
+    apply_style_wasm(sp, so, ep, eo, StyleChange::SetHighlight(color.to_string()))
+}
+
+#[wasm_bindgen]
+pub fn toggle_superscript(sp: usize, so: usize, ep: usize, eo: usize) -> String {
+    apply_style_wasm(sp, so, ep, eo, StyleChange::ToggleSuperscript)
+}
+
+#[wasm_bindgen]
+pub fn toggle_subscript(sp: usize, so: usize, ep: usize, eo: usize) -> String {
+    apply_style_wasm(sp, so, ep, eo, StyleChange::ToggleSubscript)
+}
+
+#[wasm_bindgen]
+pub fn clear_formatting(sp: usize, so: usize, ep: usize, eo: usize) -> String {
+    apply_style_wasm(sp, so, ep, eo, StyleChange::ClearFormatting)
+}
+
+// --- Paragraph operations ---
+
+#[wasm_bindgen]
+pub fn set_indent(paragraph: usize, left: i32, right: i32, first_line: i32) -> String {
+    with_doc_mut(|d| editor::set_indent(d, paragraph, left, right, first_line));
+    get_html()
+}
+
+#[wasm_bindgen]
+pub fn set_spacing(paragraph: usize, before: u32, after: u32, line: u32) -> String {
+    with_doc_mut(|d| editor::set_spacing(d, paragraph, before, after, line));
+    get_html()
+}
+
+#[wasm_bindgen]
+pub fn set_heading_level(paragraph: usize, level: u8) -> String {
+    with_doc_mut(|d| editor::set_heading_level(d, paragraph, level));
+    get_html()
+}
+
+#[wasm_bindgen]
+pub fn toggle_list(paragraph: usize, list_type: &str) -> String {
+    with_doc_mut(|d| editor::toggle_list(d, paragraph, list_type));
+    get_html()
+}
+
+// --- Find and Replace ---
+
+#[wasm_bindgen]
+pub fn find_text(query: &str) -> String {
+    let results = with_doc(|d| editor::find_text(d, query));
+    serde_json::to_string(&results).unwrap_or_else(|_| "[]".to_string())
+}
+
+#[wasm_bindgen]
+pub fn replace_text(para: usize, offset: usize, len: usize, replacement: &str) -> String {
+    with_doc_mut(|d| editor::replace_text_at(d, para, offset, len, replacement));
+    get_html()
+}
+
+#[wasm_bindgen]
+pub fn replace_all(query: &str, replacement: &str) -> String {
+    let count = with_doc_mut(|d| editor::replace_all(d, query, replacement));
+    let html = get_html();
+    format!("{}\n{}", count, html)
+}
+
+// --- Table operations ---
+
+#[wasm_bindgen]
+pub fn insert_table(paragraph: usize, rows: usize, cols: usize) -> String {
+    with_doc_mut(|d| editor::insert_table(d, paragraph, rows, cols));
+    get_html()
+}
+
+// --- Page break ---
+
+#[wasm_bindgen]
+pub fn insert_page_break(paragraph: usize) -> String {
+    with_doc_mut(|d| editor::insert_page_break(d, paragraph));
+    get_html()
+}
+
+// --- Hyperlinks and Bookmarks ---
+
+#[wasm_bindgen]
+pub fn insert_hyperlink(para: usize, start_offset: usize, end_offset: usize, url: &str) -> String {
+    with_doc_mut(|d| editor::insert_hyperlink(d, para, start_offset, end_offset, url));
+    get_html()
+}
+
+#[wasm_bindgen]
+pub fn insert_bookmark(para: usize, offset: usize, name: &str) -> String {
+    with_doc_mut(|d| editor::insert_bookmark(d, para, offset, name));
+    get_html()
+}
+
 // --- Header/Footer rendering ---
 
 #[wasm_bindgen]
